@@ -1,0 +1,54 @@
+version: '3'
+services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-namenode
+    environment:
+      - CLUSTER_NAME=testcluster
+    ports:
+      - "9870:9870"  # NameNode Web UI
+    volumes:
+      - namenode:/hadoop/dfs/name
+    command: "/entrypoint.sh namenode"
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-datanode
+    environment:
+      - CLUSTER_NAME=testcluster
+      - NAMENODE_URI=hdfs://namenode:9000
+    ports:
+      - "9864:9864"  # DataNode Web UI
+    volumes:
+      - datanode:/hadoop/dfs/data
+    command: "/entrypoint.sh datanode"
+
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-resourcemanager
+    environment:
+      - CLUSTER_NAME=testcluster
+      - NAMENODE_URI=hdfs://namenode:9000
+    ports:
+      - "8088:8088"  # ResourceManager Web UI
+    depends_on:
+      - namenode
+
+  jobhistory:
+    image: bde2020/hadoop-jobhistory:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-jobhistory
+    environment:
+      - CLUSTER_NAME=testcluster
+    depends_on:
+      - namenode
+
+  client:
+    image: bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-client
+    environment:
+      - CLUSTER_NAME=testcluster
+    command: "/bin/bash"
+
+volumes:
+  namenode:
+  datanode:
